@@ -37,9 +37,10 @@ struct AgentRowView: View {
                         Text(primaryText)
                             .font(.system(size: primaryFontSize, weight: .medium))
                             .lineLimit(1)
-                            .layoutPriority(1)
+                            .truncationMode(.tail)
                         if session.isAutomated {
                             AutomatedBadge()
+                                .fixedSize()
                         }
                         Spacer(minLength: 8)
                         if let onTogglePin, isHovering || isPinned {
@@ -54,6 +55,8 @@ struct AgentRowView: View {
                         Text(relativeTime)
                             .font(.system(size: secondaryFontSize))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
                     if !compact {
                         Text(session.displayPath)
