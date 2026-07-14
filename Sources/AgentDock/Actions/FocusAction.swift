@@ -21,11 +21,16 @@ enum FocusAction {
                 }
             }
         case .codex:
-            // Codex runs have no reliable window to return to — a `codex exec`
-            // background task was never attached to a terminal at all. Prefer a
-            // terminal window whose title matches the cwd, otherwise fall back to
-            // the project's VS Code window. Never raise an unrelated terminal.
-            if !activateTerminal(cwd: session.cwd) {
+            let origin = session.entrypoint ?? ""
+            if origin.range(of: "desktop", options: .caseInsensitive) != nil {
+                // Codex running inside the ChatGPT desktop app (originator
+                // "Codex Desktop", bundle id com.openai.codex)
+                activateCodexDesktop(session)
+            } else if !activateTerminal(cwd: session.cwd) {
+                // codex-tui with a matching terminal window is handled above;
+                // otherwise (including `codex exec` background tasks, which were
+                // never attached to a terminal) fall back to the project's VS Code
+                // window. Never raise an unrelated terminal.
                 openInVSCode(session.cwd)
             }
         }
@@ -72,6 +77,20 @@ enum FocusAction {
             return
         }
         activateApp(bundleIds: claudeDesktopBundleIds)
+    }
+
+    /// The ChatGPT desktop app (which hosts Codex) uses this bundle id.
+    static let codexDesktopBundleIds = ["com.openai.codex"]
+
+    /// Returns to a Codex session running in the ChatGPT desktop app.
+    /// Raises the window matching the session title if one exists, otherwise
+    /// just activates the app.
+    private static func activateCodexDesktop(_ session: AgentSession) {
+        if let title = session.title,
+           WindowRaiser.raiseWindow(bundleIds: codexDesktopBundleIds, titleContains: title) {
+            return
+        }
+        activateApp(bundleIds: codexDesktopBundleIds)
     }
 
     static let terminalBundleIds = [
