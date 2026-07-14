@@ -139,16 +139,16 @@ def draw_icon(path: Path) -> None:
     def background_color(x: int, y: int) -> tuple[int, int, int, int]:
         diagonal = (x + y) / (SIZE * 2)
         radial = math.hypot(x - 760, y - 250) / 920
-        base = mix((18, 35, 59, 255), (22, 114, 140, 255), diagonal)
-        glow = mix(base, (80, 207, 176, 255), max(0.0, 1.0 - radial) * 0.35)
+        base = mix((237, 247, 249, 255), (150, 212, 214, 255), diagonal)
+        glow = mix(base, (120, 222, 202, 255), max(0.0, 1.0 - radial) * 0.30)
         return glow
 
     canvas.draw_rounded_rect(42, 42, 982, 982, 214, background_color, 5)
 
     for y in range(112, 920, 82):
-        canvas.draw_line(154, y, 870, y, 2, (127, 221, 205, 32))
+        canvas.draw_line(154, y, 870, y, 2, (30, 92, 100, 32))
     for x in range(154, 900, 94):
-        canvas.draw_line(x, 130, x, 874, 2, (127, 221, 205, 28))
+        canvas.draw_line(x, 130, x, 874, 2, (30, 92, 100, 28))
 
     nodes = [
         (294, 292, 46, (86, 213, 187, 255)),
@@ -160,15 +160,15 @@ def draw_icon(path: Path) -> None:
     ]
     links = [(294, 292, 512, 230), (512, 230, 722, 314), (294, 292, 362, 552), (362, 552, 612, 560), (612, 560, 760, 716), (722, 314, 612, 560)]
     for x0, y0, x1, y1 in links:
-        canvas.draw_line(x0, y0, x1, y1, 18, (122, 230, 213, 70))
-        canvas.draw_line(x0, y0, x1, y1, 7, (235, 253, 255, 98))
+        canvas.draw_line(x0, y0, x1, y1, 18, (28, 118, 108, 65))
+        canvas.draw_line(x0, y0, x1, y1, 7, (10, 44, 50, 98))
 
     panels = [(190, 168, 406, 380), (428, 142, 636, 354), (642, 216, 846, 428), (244, 444, 456, 658), (500, 432, 724, 670), (626, 642, 826, 824)]
     for x0, y0, x1, y1 in panels:
-        canvas.draw_rounded_rect(x0, y0, x1, y1, 34, lambda _x, _y: (241, 250, 255, 26), 3)
-        canvas.draw_rounded_rect(x0 + 8, y0 + 8, x1 - 8, y1 - 8, 26, lambda _x, _y: (3, 18, 30, 38), 2)
-        canvas.draw_rect(x0 + 34, y0 + 42, x1 - 34, y0 + 54, (223, 250, 255, 92))
-        canvas.draw_rect(x0 + 34, y0 + 78, x1 - 62, y0 + 88, (223, 250, 255, 48))
+        canvas.draw_rounded_rect(x0, y0, x1, y1, 34, lambda _x, _y: (10, 44, 52, 32), 3)
+        canvas.draw_rounded_rect(x0 + 8, y0 + 8, x1 - 8, y1 - 8, 26, lambda _x, _y: (255, 255, 255, 60), 2)
+        canvas.draw_rect(x0 + 34, y0 + 42, x1 - 34, y0 + 54, (28, 84, 92, 96))
+        canvas.draw_rect(x0 + 34, y0 + 78, x1 - 62, y0 + 88, (28, 84, 92, 52))
 
     for cx, cy, radius, color in nodes:
         canvas.draw_circle(cx, cy, radius + 20, (color[0], color[1], color[2], 42), 5)
@@ -176,13 +176,13 @@ def draw_icon(path: Path) -> None:
         canvas.draw_circle(cx - radius // 4, cy - radius // 4, max(8, radius // 4), (255, 255, 255, 145), 3)
 
     dock_y = 842
-    canvas.draw_rounded_rect(202, 790, 822, 910, 54, lambda _x, _y: (239, 251, 255, 42), 3)
+    canvas.draw_rounded_rect(202, 790, 822, 910, 54, lambda _x, _y: (16, 60, 68, 40), 3)
     for i, color in enumerate([(86, 213, 187, 255), (255, 205, 91, 255), (122, 162, 255, 255), (255, 128, 119, 255), (88, 225, 154, 255)]):
         x = 318 + i * 98
         canvas.draw_circle(x, dock_y, 28, color, 3)
-        canvas.draw_circle(x, dock_y + 45, 8, (226, 255, 244, 210), 2)
+        canvas.draw_circle(x, dock_y + 45, 8, (16, 60, 68, 170), 2)
 
-    canvas.draw_rounded_rect(42, 42, 982, 982, 214, lambda _x, _y: (255, 255, 255, 28), 5)
+    canvas.draw_rounded_rect(42, 42, 982, 982, 214, lambda _x, _y: (10, 40, 48, 26), 5)
     canvas.write_png(path)
 
 
