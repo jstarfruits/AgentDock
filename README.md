@@ -28,12 +28,16 @@
 
 ## 使い方
 
-.app バンドルとしてビルドして起動する(推奨):
+.app バンドルとしてビルドし、/Applications にインストールする(推奨):
 
 ```sh
-./scripts/build-app.sh
-open build/AgentDock.app
+./scripts/build-app.sh --install
 ```
+
+(`--install` なしなら `build/AgentDock.app` に生成されるだけ)
+
+ログイン時に自動起動したい場合は「システム設定 > 一般 > ログイン項目」に
+AgentDock.app を追加する。
 
 開発中は `swift run` でも起動できる(この場合、通知は osascript 経由になり
 クリック先がスクリプトエディタになる等の制約がある)。

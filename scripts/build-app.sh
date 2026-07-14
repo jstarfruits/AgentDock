@@ -43,4 +43,16 @@ EOF
 codesign --force -s - "$APP"
 
 echo "built: $APP"
-echo "起動: open $APP"
+
+# --install で /Applications へ配置(起動中なら終了してから差し替える)
+if [ "${1:-}" = "--install" ]; then
+    pkill -x AgentDock 2>/dev/null || true
+    sleep 1
+    rm -rf /Applications/AgentDock.app
+    cp -R "$APP" /Applications/AgentDock.app
+    echo "installed: /Applications/AgentDock.app"
+    open /Applications/AgentDock.app
+else
+    echo "起動: open $APP"
+    echo "インストール: $0 --install"
+fi
