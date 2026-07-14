@@ -7,6 +7,8 @@
 "menu.noAgents" = "監視中のエージェントはありません";
 "section.pinned" = "ピン留め";
 "section.stalled" = "停滞中";
+"badge.automated" = "自動";
+"help.automated" = "バックグラウンド実行(codex exec / ヘッドレス)";
 "menu.showTitles" = "セッションタイトルを表示";
 "menu.textSize" = "文字サイズ";
 "menu.iconSize" = "アイコンサイズ";

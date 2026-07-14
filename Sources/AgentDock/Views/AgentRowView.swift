@@ -37,6 +37,10 @@ struct AgentRowView: View {
                         Text(primaryText)
                             .font(.system(size: primaryFontSize, weight: .medium))
                             .lineLimit(1)
+                            .layoutPriority(1)
+                        if session.isAutomated {
+                            AutomatedBadge()
+                        }
                         Spacer(minLength: 8)
                         if let onTogglePin, isHovering || isPinned {
                             Button(action: onTogglePin) {
@@ -85,5 +89,18 @@ struct AgentRowView: View {
 
     private var relativeTime: String {
         RelativeTime.string(for: session.lastActivity)
+    }
+}
+
+/// Small "Auto" tag marking a non-interactive background run
+struct AutomatedBadge: View {
+    var body: some View {
+        Text(loc("badge.automated"))
+            .font(.system(size: 8, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 1)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 3))
+            .help(loc("help.automated"))
     }
 }

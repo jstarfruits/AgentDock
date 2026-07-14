@@ -7,6 +7,8 @@
 "menu.noAgents" = "No agents are being monitored";
 "section.pinned" = "Pinned";
 "section.stalled" = "Stalled";
+"badge.automated" = "Auto";
+"help.automated" = "Background run (codex exec / headless)";
 "menu.showTitles" = "Show session titles";
 "menu.textSize" = "Text size";
 "menu.iconSize" = "Icon size";

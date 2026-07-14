@@ -49,16 +49,30 @@ struct CodexCollector: Collector {
               let sessionId = payload["id"] as? String,
               let cwd = payload["cwd"] as? String else { return nil }
 
+        // `codex exec` (background/headless) runs are non-interactive, so they can
+        // never be "waiting for user input". originator "codex_exec" / source "exec"
+        // identify them reliably.
+        let originator = payload["originator"] as? String
+        let isAutomated = originator == "codex_exec" || payload["source"] as? String == "exec"
+
+        var status = status(of: file, mtime: mtime)
+        // For an automated run, task_complete just means "done" — never surface it
+        // as needs-attention (it would otherwise linger for hours as noise).
+        if isAutomated, status == .needsAttention {
+            status = .idle
+        }
+
         return AgentSession(
             id: "codex:\(sessionId)",
             source: .codex,
             name: URL(fileURLWithPath: cwd).lastPathComponent,
             cwd: cwd,
-            status: status(of: file, mtime: mtime),
+            status: status,
             lastActivity: mtime,
-            entrypoint: payload["originator"] as? String,
+            entrypoint: originator,
             lastMessage: latestAssistantText(of: file),
-            title: FirstPromptCache.shared.firstPrompt(codexRollout: file)
+            title: FirstPromptCache.shared.firstPrompt(codexRollout: file),
+            isAutomated: isAutomated
         )
     }
 

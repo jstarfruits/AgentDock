@@ -95,7 +95,8 @@ final class AgentStore: ObservableObject {
         // Notify on transitions into "needs attention" (skip the batch of notifications on the
         // very first collection right after launch)
         if hasRefreshedOnce {
-            for session in sorted where session.status == .needsAttention
+            for session in sorted where !session.isAutomated
+                && session.status == .needsAttention
                 && previousStatuses[session.id] != .needsAttention
                 && previousStatuses[session.id] != nil {
                 Notifier.notify(

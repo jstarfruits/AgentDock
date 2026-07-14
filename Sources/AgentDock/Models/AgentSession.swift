@@ -48,6 +48,10 @@ struct AgentSession: Identifiable, Equatable {
     var lastMessage: String? = nil
     /// Session title (recorded by the desktop app, or an excerpt of the first prompt)
     var title: String? = nil
+    /// Whether this is a non-interactive / background run (e.g. `codex exec`,
+    /// a headless session). Such sessions are nested under their parent and
+    /// do not raise notifications.
+    var isAutomated: Bool = false
 
     /// Format message text into a single-line snippet for list display
     static func snippet(of text: String, maxLength: Int = 150) -> String {
