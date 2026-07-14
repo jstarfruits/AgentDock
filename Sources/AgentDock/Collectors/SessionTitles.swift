@@ -75,10 +75,12 @@ final class FirstPromptCache {
         }
     }
 
-    /// Extracts from a Codex rollout (user messages near the start)
+    /// Extracts from a Codex rollout (user messages near the start).
+    /// The session_meta line alone can be tens of KB (Codex Desktop), so read a
+    /// wide window here too.
     func firstPrompt(codexRollout url: URL) -> String? {
         cached(url.path) {
-            for line in headLines(of: url) {
+            for line in headLines(of: url, maxBytes: 4 * 1024 * 1024) {
                 guard let obj = JSONLFile.parse(line),
                       let payload = obj["payload"] as? [String: Any],
                       payload["type"] as? String == "message",

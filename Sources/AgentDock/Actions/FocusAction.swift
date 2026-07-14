@@ -21,17 +21,15 @@ enum FocusAction {
                 }
             }
         case .codex:
-            let origin = session.entrypoint ?? ""
-            if origin.range(of: "desktop", options: .caseInsensitive) != nil {
-                // Codex running inside the ChatGPT desktop app (originator
-                // "Codex Desktop", bundle id com.openai.codex)
+            if session.entrypoint?.range(of: "desktop", options: .caseInsensitive) != nil {
+                // Codex running inside the ChatGPT desktop app
+                // (originator "Codex Desktop", bundle id com.openai.codex)
                 activateCodexDesktop(session)
             } else if !activateTerminal(cwd: session.cwd) {
-                // codex-tui with a matching terminal window is handled above;
-                // otherwise (including `codex exec` background tasks, which were
-                // never attached to a terminal) fall back to the project's VS Code
-                // window. Never raise an unrelated terminal.
-                openInVSCode(session.cwd)
+                // codex-tui runs in a terminal; codex exec (background) has no
+                // window to return to. Raise a matching terminal window, else a
+                // running terminal app.
+                activateApp(bundleIds: terminalBundleIds)
             }
         }
     }

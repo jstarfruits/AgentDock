@@ -16,6 +16,8 @@ enum AppIcons {
                 return appIcon(bundleIds: FocusAction.vscodeBundleIds)
             case "claude":
                 return appIcon(bundleIds: FocusAction.claudeDesktopBundleIds)
+            case "codex-app":
+                return appIcon(bundleIds: FocusAction.codexDesktopBundleIds)
             default:
                 return terminalIcon()
             }
@@ -34,6 +36,12 @@ enum AppIcons {
     }
 
     private static func hostKey(for session: AgentSession) -> String {
+        if session.source == .codex {
+            // ChatGPT desktop app (originator "Codex Desktop") vs terminal
+            // (codex-tui / codex exec)
+            let isDesktop = session.entrypoint?.range(of: "desktop", options: .caseInsensitive) != nil
+            return isDesktop ? "codex-app" : "terminal"
+        }
         if session.source == .vscode || session.entrypoint?.contains("vscode") == true {
             return "vscode"
         }

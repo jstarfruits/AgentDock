@@ -30,15 +30,22 @@ enum JSONLFile {
         return lines
     }
 
-    /// Returns the first line of a file (used for session metadata)
-    static func firstLine(of url: URL, maxBytes: Int = 32768) -> String? {
+    /// Returns the first line of a file (used for session metadata).
+    /// Reads in chunks until a newline appears — Codex Desktop session_meta lines
+    /// can exceed 32KB, and truncating one made the session silently disappear.
+    static func firstLine(of url: URL, maxBytes: Int = 4 * 1024 * 1024) -> String? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }
-        guard let data = try? handle.read(upToCount: maxBytes) else { return nil }
-        guard let newline = data.firstIndex(of: UInt8(ascii: "\n")) else {
-            return String(data: data, encoding: .utf8)
+        var data = Data()
+        while data.count < maxBytes {
+            guard let chunk = try? handle.read(upToCount: 65536), !chunk.isEmpty else { break }
+            if let newline = chunk.firstIndex(of: UInt8(ascii: "\n")) {
+                data.append(chunk.prefix(upTo: newline))
+                break
+            }
+            data.append(chunk)
         }
-        return String(data: data[data.startIndex..<newline], encoding: .utf8)
+        return data.isEmpty ? nil : String(data: data, encoding: .utf8)
     }
 
     static func parse(_ line: String) -> [String: Any]? {

@@ -49,6 +49,14 @@ struct CodexCollector: Collector {
               let sessionId = payload["id"] as? String,
               let cwd = payload["cwd"] as? String else { return nil }
 
+        // Skip internal sub-agent rollouts (e.g. the "guardian" approval agent):
+        // their source is like {"subagent": {...}}. They aren't user-facing
+        // sessions — their first message is a system prompt and their output is
+        // JSON — so they must not appear in the list.
+        if let source = payload["source"] as? [String: Any], source["subagent"] != nil {
+            return nil
+        }
+
         // `codex exec` (background/headless) runs are non-interactive, so they can
         // never be "waiting for user input". originator "codex_exec" / source "exec"
         // identify them reliably.
