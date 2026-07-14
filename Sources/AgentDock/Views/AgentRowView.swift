@@ -10,19 +10,19 @@ struct AgentRowView: View {
     @State private var isHovering = false
     /// 行の主表示をセッションタイトルにするか(オフならセッション名)。メニューから切替
     @AppStorage("showSessionTitles") private var showTitles = true
-    @AppStorage("textScale") private var textScale = 1.0
-    @AppStorage("iconScale") private var iconScale = 1.0
+    @AppStorage(DisplayScale.textKey) private var textSize = DisplayScale.defaultValue
+    @AppStorage(DisplayScale.iconKey) private var iconSize = DisplayScale.defaultValue
 
     private var primaryText: String {
         showTitles ? (session.title ?? session.name) : session.name
     }
 
     private var primaryFontSize: CGFloat {
-        (compact ? 11 : 13) * textScale
+        (compact ? 11 : 13) * DisplayScale.text(textSize)
     }
 
     private var secondaryFontSize: CGFloat {
-        10 * textScale
+        10 * DisplayScale.text(textSize)
     }
 
     var body: some View {
@@ -63,7 +63,7 @@ struct AgentRowView: View {
                         Text(message)
                             .font(.system(size: secondaryFontSize))
                             .foregroundStyle(.tertiary)
-                            .lineLimit(1)
+                            .lineLimit(DisplayScale.messageLineLimit(iconSize: iconSize))
                     }
                 }
             }
@@ -81,7 +81,7 @@ struct AgentRowView: View {
     }
 
     private var iconWithStatusBadge: some View {
-        AgentIconView(session: session, size: (compact ? 18 : 22) * iconScale)
+        AgentIconView(session: session, size: (compact ? 18 : 22) * DisplayScale.icon(iconSize))
     }
 
     private var relativeTime: String {

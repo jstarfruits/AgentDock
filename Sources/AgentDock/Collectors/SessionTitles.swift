@@ -45,9 +45,17 @@ final class ClaudeDesktopTitleIndex {
 final class FirstPromptCache {
     static let shared = FirstPromptCache()
 
+    private enum Entry {
+        case found(String)
+        /// 見つからなかった時刻。書き込み中のファイルはまだプロンプトが無いことが
+        /// あるため、一定時間後に再試行する
+        case missing(Date)
+    }
+
     private let lock = NSLock()
-    private var cache: [String: String?] = [:]
+    private var cache: [String: Entry] = [:]
     private static let maxLength = 60
+    private static let retryInterval: TimeInterval = 120
 
     /// Claude Code トランスクリプト(先頭側の user エントリ)から抽出。
     /// 先頭はコマンド展開・ツール結果で埋まることがあるため広めに読む(結果はキャッシュ)
@@ -87,12 +95,16 @@ final class FirstPromptCache {
     private func cached(_ key: String, resolve: () -> String?) -> String? {
         lock.lock()
         defer { lock.unlock() }
-        if let hit = cache[key] {
-            return hit
+        switch cache[key] {
+        case .found(let value):
+            return value
+        case .missing(let checkedAt) where Date().timeIntervalSince(checkedAt) < Self.retryInterval:
+            return nil
+        default:
+            let value = resolve()
+            cache[key] = value.map(Entry.found) ?? .missing(Date())
+            return value
         }
-        let value = resolve()
-        cache[key] = value
-        return value
     }
 
     private func headLines(of url: URL, maxBytes: Int = 65536) -> [String] {

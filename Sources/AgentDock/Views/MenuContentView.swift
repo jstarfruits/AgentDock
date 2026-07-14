@@ -26,8 +26,8 @@ struct MenuContentView: View {
     @ObservedObject var store: AgentStore
     @ObservedObject var panelState: PanelState
     @AppStorage("showSessionTitles") private var showTitles = true
-    @AppStorage("textScale") private var textScale = 1.0
-    @AppStorage("iconScale") private var iconScale = 1.0
+    @AppStorage(DisplayScale.textKey) private var textSize = DisplayScale.defaultValue
+    @AppStorage(DisplayScale.iconKey) private var iconSize = DisplayScale.defaultValue
     @StateObject private var loginItem = LoginItem()
 
     var body: some View {
@@ -51,15 +51,15 @@ struct MenuContentView: View {
         Divider()
 
         Toggle("セッションタイトルを表示", isOn: $showTitles)
-        Picker("文字サイズ", selection: $textScale) {
-            Text("小").tag(0.9)
-            Text("中").tag(1.0)
-            Text("大").tag(1.2)
+        Picker("文字サイズ", selection: $textSize) {
+            Text("小").tag("small")
+            Text("中").tag("medium")
+            Text("大").tag("large")
         }
-        Picker("アイコンサイズ", selection: $iconScale) {
-            Text("小").tag(0.85)
-            Text("中").tag(1.0)
-            Text("大").tag(1.25)
+        Picker("アイコンサイズ", selection: $iconSize) {
+            Text("小").tag("small")
+            Text("中").tag("medium")
+            Text("大").tag("large")
         }
         if Notifier.isBundledApp {
             Toggle("ログイン時に起動", isOn: Binding(
