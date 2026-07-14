@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// 常時最前面パネルの表示状態(メニューとパネル双方から参照する)
+/// Visibility state of the always-on-top panel (referenced by both the menu and the panel)
 @MainActor
 final class PanelState: ObservableObject {
     @Published private(set) var isVisible: Bool
@@ -37,8 +37,8 @@ final class PanelState: ObservableObject {
     }
 }
 
-/// 常時最前面・非アクティブ化パネル。クリックしても他アプリのフォーカスを奪わず、
-/// 全画面アプリの上やすべての Space でも表示される。
+/// An always-on-top, non-activating panel. Clicking it never steals focus from other apps,
+/// and it stays visible over full-screen apps and across all Spaces.
 @MainActor
 final class FloatingPanelController: NSObject, NSWindowDelegate {
     private let panel: NSPanel
@@ -58,7 +58,8 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
-        // 閉じるボタンは SwiftUI 側で信号機風に描画する(透明パネルでは標準ボタンの位置が合わない)
+        // The close button is drawn on the SwiftUI side in traffic-light style
+        // (the standard button's position doesn't line up on a transparent panel)
         panel.standardWindowButton(.closeButton)?.isHidden = true
         panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
         panel.standardWindowButton(.zoomButton)?.isHidden = true
@@ -70,8 +71,8 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
         panel.becomesKeyOnlyIfNeeded = true
         panel.isReleasedWhenClosed = false
 
-        // リサイズ可能にするため、ウインドウサイズ主導でレイアウトする
-        // (サイズと位置は setFrameAutosaveName で永続化される)
+        // Layout is driven by the window size to support resizing
+        // (size and position are persisted via setFrameAutosaveName)
         panel.minSize = NSSize(width: 240, height: 160)
         let hosting = NSHostingView(
             rootView: FloatingPanelView(store: store, panelState: panelState)
@@ -80,7 +81,7 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
 
         panel.setFrameAutosaveName("AgentDockFloatingPanel")
         if panel.frame.origin == .zero, let screen = NSScreen.main {
-            // 初回起動時は画面右上に配置
+            // Position at the top-right of the screen on first launch
             let frame = screen.visibleFrame
             panel.setFrameTopLeftPoint(NSPoint(
                 x: frame.maxX - panel.frame.width - 16,
@@ -97,7 +98,7 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
         panel.orderOut(nil)
     }
 
-    /// 標準の閉じるボタンは「非表示」として扱い、表示状態の記憶に反映する
+    /// Treat the standard close button as "hide" and reflect it in the persisted visibility state
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         panelState?.hide()
         return false

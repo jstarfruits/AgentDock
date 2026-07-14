@@ -1,13 +1,13 @@
 import AppKit
 
-/// セッションが実際に動いているアプリのアイコンを NSWorkspace から取得する。
-/// アイコン画像をリポジトリに含めないための仕組み(見つからなければ nil)。
+/// Fetches the icon of the app a session is actually running in, via NSWorkspace.
+/// This keeps icon images out of the repository (returns nil if not found).
 @MainActor
 enum AppIcons {
     private static var cache: [String: NSImage?] = [:]
 
-    /// セッションの実行場所(ホストアプリ)のアイコンを返す。
-    /// VS Code 内 → VS Code、Claude デスクトップ → Claude、CLI/TUI → ターミナルアプリ。
+    /// Returns the icon of the session's host app.
+    /// Inside VS Code → VS Code, Claude desktop → Claude, CLI/TUI → the terminal app.
     static func icon(for session: AgentSession) -> NSImage? {
         let key = hostKey(for: session)
         return cached(key: key) {
@@ -22,7 +22,7 @@ enum AppIcons {
         }
     }
 
-    /// 標準メニュー項目用の16ptアイコン
+    /// 16pt icon for standard menu items
     static func menuIcon(for session: AgentSession) -> NSImage? {
         let key = "menu-\(hostKey(for: session))"
         return cached(key: key) {
@@ -52,7 +52,7 @@ enum AppIcons {
         return icon
     }
 
-    /// 起動中のターミナルアプリを優先し、無ければインストール済みのものを探す
+    /// Prefers a running terminal app; falls back to an installed one if none is running
     private static func terminalIcon() -> NSImage? {
         for bundleId in FocusAction.terminalBundleIds {
             if let app = NSRunningApplication

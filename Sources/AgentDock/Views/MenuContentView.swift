@@ -1,7 +1,7 @@
 import SwiftUI
 import ServiceManagement
 
-/// ログイン項目(自動起動)の登録状態。.app バンドル実行時のみ利用できる
+/// Login item (auto-launch) registration state. Only usable when running as a .app bundle.
 @MainActor
 final class LoginItem: ObservableObject {
     @Published private(set) var isEnabled = SMAppService.mainApp.status == .enabled
@@ -14,14 +14,14 @@ final class LoginItem: ObservableObject {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
-            // 登録失敗時は現状ステータスに合わせて表示を戻す
+            // Registration failed; fall back to reflecting the current status
         }
         isEnabled = SMAppService.mainApp.status == .enabled
     }
 }
 
-/// メニューバーの標準メニュー(NSMenuスタイル)。
-/// 項目クリックで該当セッションへ復帰。停滞中・アイドルはサブメニューに畳む。
+/// Standard menu bar menu (NSMenu style).
+/// Clicking an item returns to the corresponding session. Stalled/idle sessions collapse into submenus.
 struct MenuContentView: View {
     @ObservedObject var store: AgentStore
     @ObservedObject var panelState: PanelState
@@ -32,48 +32,48 @@ struct MenuContentView: View {
 
     var body: some View {
         if store.sessions.isEmpty {
-            Text("監視中のエージェントはありません")
+            Text(loc("menu.noAgents"))
         }
-        namedSection("ピン留め", store.pinnedSessions)
-        namedSection("要対応", store.attentionSessions)
-        namedSection("実行中", store.runningSessions)
+        namedSection(loc("section.pinned"), store.pinnedSessions)
+        namedSection(loc("status.needsAttention"), store.attentionSessions)
+        namedSection(loc("status.running"), store.runningSessions)
         if !store.staleSessions.isEmpty {
-            Menu("停滞中 (\(store.staleSessions.count))") {
+            Menu("\(loc("section.stalled")) (\(store.staleSessions.count))") {
                 sessionItems(store.staleSessions)
             }
         }
         if !store.idleSessions.isEmpty {
-            Menu("アイドル (\(store.idleSessions.count))") {
+            Menu("\(loc("status.idle")) (\(store.idleSessions.count))") {
                 sessionItems(store.idleSessions)
             }
         }
 
         Divider()
 
-        Toggle("セッションタイトルを表示", isOn: $showTitles)
-        Picker("文字サイズ", selection: $textSize) {
-            Text("小").tag("small")
-            Text("中").tag("medium")
-            Text("大").tag("large")
+        Toggle(loc("menu.showTitles"), isOn: $showTitles)
+        Picker(loc("menu.textSize"), selection: $textSize) {
+            Text(loc("size.small")).tag("small")
+            Text(loc("size.medium")).tag("medium")
+            Text(loc("size.large")).tag("large")
         }
-        Picker("アイコンサイズ", selection: $iconSize) {
-            Text("小").tag("small")
-            Text("中").tag("medium")
-            Text("大").tag("large")
+        Picker(loc("menu.iconSize"), selection: $iconSize) {
+            Text(loc("size.small")).tag("small")
+            Text(loc("size.medium")).tag("medium")
+            Text(loc("size.large")).tag("large")
         }
         if Notifier.isBundledApp {
-            Toggle("ログイン時に起動", isOn: Binding(
+            Toggle(loc("menu.launchAtLogin"), isOn: Binding(
                 get: { loginItem.isEnabled },
                 set: { loginItem.set($0) }
             ))
         }
-        Button(panelState.isVisible ? "パネルを隠す" : "パネルを表示") {
+        Button(panelState.isVisible ? loc("menu.hidePanel") : loc("menu.showPanel")) {
             panelState.toggle()
         }
 
         Divider()
 
-        Button("Agent Dock を終了") {
+        Button(loc("menu.quit")) {
             NSApp.terminate(nil)
         }
         .keyboardShortcut("q")

@@ -1,79 +1,90 @@
 # Agent Dock
 
-複数のAIエージェント・開発ツールの状態を一か所で把握するための macOS メニューバーアプリ。
-タスク管理アプリではなく、AIエージェント時代の **Mission Control** を目指す。
+A macOS menu bar app that shows the state of multiple AI agents and dev tools in one place.
 
-複数のAIエージェントを並行で動かしていると「どれが実行中か」「どれが自分の対応待ちか」が
-分からなくなり、作業が抜け落ちる。AgentDock はローカルのデータソースから自動で状態を収集し、
+日本語版は [README.ja.md](README.ja.md) をご覧ください。
 
-- **要対応**(エージェントがユーザーの入力を待っている)
-- **実行中**
-- **アイドル**
+It's not a task manager — the goal is a **Mission Control** for the age of AI agents.
 
-を常時最前面のフローティングパネルとメニューバーに表示する。行をクリックすると該当の
-アプリ・ワークスペースへワンクリックで復帰できる。
+When you're running several AI agents in parallel, it's easy to lose track of which one
+is still working and which one is waiting on you, and things slip through the cracks.
+Agent Dock automatically collects state from local data sources and shows:
 
-## 対応ツール (MVP)
+- **Needs attention** (the agent is waiting for your input)
+- **Running**
+- **Idle**
 
-| ツール | データソース | 検出内容 |
+in an always-on-top floating panel and in the menu bar. Click a row to jump straight back
+to that app or workspace. The UI is localized in English and Japanese and follows your
+system language automatically.
+
+## Supported tools (MVP)
+
+| Tool | Data source | What's detected |
 |---|---|---|
-| Claude Code | `~/.claude/sessions/*.json` + `~/.claude/projects/**/*.jsonl` | ライブセッションと状態(入力待ち / 実行中) |
-| Codex | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` | 直近24時間のセッションと状態 |
-| VS Code | `~/.claude/ide/*.lock` | 開いているワークスペース |
+| Claude Code | `~/.claude/sessions/*.json` + `~/.claude/projects/**/*.jsonl` | Live sessions and their state (waiting for input / running) |
+| Codex | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` | Sessions from the last 24 hours and their state |
+| VS Code | `~/.claude/ide/*.lock` | Open workspaces |
 
-## 動作要件
+## Requirements
 
-- macOS 14 以降
-- Swift 6 ツールチェーン(Xcode Command Line Tools)
+- macOS 14 or later
+- Swift 6 toolchain (Xcode Command Line Tools)
 
-## 使い方
+## Usage
 
-.app バンドルとしてビルドし、/Applications にインストールする(推奨):
+Build as a .app bundle and install it into /Applications (recommended):
 
 ```sh
 ./scripts/build-app.sh --install
 ```
 
-(`--install` なしなら `build/AgentDock.app` に生成されるだけ)
+(without `--install`, it's just produced at `build/AgentDock.app`)
 
-ログイン時に自動起動したい場合は「システム設定 > 一般 > ログイン項目」に
-AgentDock.app を追加する。
+To launch automatically at login, add AgentDock.app under
+System Settings > General > Login Items.
 
-開発中は `swift run` でも起動できる(この場合、通知は osascript 経由になり
-クリック先がスクリプトエディタになる等の制約がある)。
+You can also run it with `swift run` during development (in that case notifications go
+through osascript, which has some limitations, like clicking one opening Script Editor).
 
-- メニューバーのアイコンに要対応の件数が表示される
-- フローティングパネルは常時最前面に表示され、ドラッグで移動・端のドラッグでリサイズできる
-  (位置・サイズ・表示状態は記憶される)。閉じるボタンで非表示、メニューバーの
-  「パネルを表示」で再表示
-- パネルはリスト表示とグリッド表示(アイコン+タイトルのみ)を切り替えられる
-- エージェントが対応待ちになると macOS 通知が届く(バンドル実行時はクリックで
-  Agent Dock が前面化)
-- 行のホバーで出るピンでセッションを常に上部に固定できる。2時間更新のない要対応は
-  「停滞中」に折りたたまれる
-- 収集結果をターミナルで確認するだけなら `swift run AgentDock --dump`
-- 復帰動作だけを試すには `swift run AgentDock --focus <パス>`
+- The menu bar icon shows the count of sessions needing attention
+- The floating panel stays on top; drag to move it, drag an edge to resize it
+  (position, size, and visibility are remembered). Use the close button to hide it,
+  and "Show panel" from the menu bar to bring it back
+- The panel can switch between a list view and a grid view (icon + title only)
+- You get a macOS notification when an agent starts needing attention (clicking it
+  brings Agent Dock to the front when running as a bundle)
+- Hover a row to reveal a pin that keeps a session at the top. Needs-attention sessions
+  with no update in 2 hours collapse into a "Stalled" section
+- To just check the collected results in the terminal: `swift run AgentDock --dump`
+- To try the focus/raise behavior on its own: `swift run AgentDock --focus <path>`
 
-### ウインドウ単位の前面化(アクセシビリティ権限)
+### Window-level focus (accessibility permission)
 
-行クリックでの復帰は、**既存ウインドウの前面化のみ**を行い、新しいウインドウは開かない。
+Clicking a row only **raises an existing window** — it never opens a new one.
 
-- アクセシビリティ権限がある場合: 対象フォルダ名をタイトルに含むウインドウを正確に前面化する。
-  macOS のネイティブタブ(「すべてのウインドウを統合」)にも対応しており、該当タブを選択する
-- 権限が無い場合: 初回クリック時に許可ダイアログが表示され、それまではアプリの前面化のみ
+- With accessibility permission granted: it precisely raises the window whose title
+  contains the target folder name. This also works with macOS native tabs ("merge all
+  windows"), selecting the matching tab
+- Without permission: the first click shows a permission dialog, and until then it only
+  activates the app
 
-権限は「システム設定 > プライバシーとセキュリティ > アクセシビリティ」で AgentDock.app
-(開発中は `.build/debug/AgentDock`)に付与する。リビルドすると署名が変わるため、
-権限の再付与(トグルのオフ→オン)が必要になることがある。
+Grant permission under System Settings > Privacy & Security > Accessibility, for
+AgentDock.app (or `.build/debug/AgentDock` during development). Rebuilding changes the
+code signature, so you may need to re-grant permission (toggle it off, then on again).
 
-## 設計方針
+## Design principles
 
-- 完全ローカル動作。ネットワークアクセス・テレメトリは一切なし
-- 手入力を前提にしない。状態はすべてローカルファイルから自動収集
-- 収集は3秒間隔のポーリング(将来 FSEvents 化予定)
+- Fully local. No network access or telemetry whatsoever
+- No manual input assumed. All state is collected automatically from local files
+- Collection is done via 3-second polling (FSEvents-based collection planned for later)
 
-## スコープ外 (今後)
+## Out of scope (for now)
 
-- Claude (claude.ai デスクトップアプリ) 連携
-- 権限プロンプト待ちの精密検出
-- 安定した署名での配布(アクセシビリティ権限の再付与を不要にする)
+- Integration with the Claude (claude.ai) desktop app
+- Precise detection of pending permission prompts
+- Distribution with a stable signature (to avoid having to re-grant accessibility permission)
+
+## License
+
+MIT License (see [LICENSE](LICENSE))

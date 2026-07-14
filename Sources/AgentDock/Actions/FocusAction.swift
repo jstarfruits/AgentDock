@@ -1,13 +1,14 @@
 import AppKit
 
-/// セッションの作業場所へワンクリックで復帰する
+/// Returns to a session's workspace with a single click
 enum FocusAction {
     static func focus(_ session: AgentSession) {
         switch session.source {
         case .vscode:
             openInVSCode(session.cwd)
         case .claudeCode:
-            // 実行場所(VS Code内 / Claudeデスクトップ / ターミナル)ごとに前面化先を変える
+            // Choose which app to bring forward based on where it's running
+            // (inside VS Code / Claude desktop / a terminal)
             if session.entrypoint?.contains("vscode") == true {
                 openInVSCode(session.cwd)
             } else if session.entrypoint?.contains("claude-desktop") == true {
@@ -24,7 +25,7 @@ enum FocusAction {
         }
     }
 
-    /// VS Code 系エディタの bundle id(Insiders / VSCodium / Cursor を含む)
+    /// Bundle ids for VS Code-family editors (including Insiders / VSCodium / Cursor)
     static let vscodeBundleIds = [
         "com.microsoft.VSCode",
         "com.microsoft.VSCodeInsiders",
@@ -32,10 +33,10 @@ enum FocusAction {
         "com.todesktop.230313mzl4w4u92", // Cursor
     ]
 
-    /// 既存ウインドウの前面化のみを行い、新しいウインドウは開かない。
-    /// 1. アクセシビリティ権限があれば、フォルダ名をタイトルに含むウインドウを AXRaise
-    /// 2. 権限が無ければ許可ダイアログを出しつつ、アプリの前面化だけ行う
-    /// 3. ウインドウが見つからない(フォルダを開いていない)場合もアプリの前面化に留める
+    /// Only raises an existing window; never opens a new one.
+    /// 1. If accessibility permission is granted, AXRaise the window whose title contains the folder name
+    /// 2. If not granted, show the permission dialog and just activate the app
+    /// 3. If no matching window is found (folder isn't open), also fall back to activating the app
     private static func openInVSCode(_ path: String) {
         let folderName = URL(fileURLWithPath: path).lastPathComponent
         if WindowRaiser.raiseWindow(bundleIds: vscodeBundleIds, titleContains: folderName) {
@@ -57,8 +58,8 @@ enum FocusAction {
 
     static let claudeDesktopBundleIds = ["com.anthropic.claudefordesktop"]
 
-    /// Claude デスクトップアプリのセッションへ復帰する。
-    /// セッションタイトルと一致するウインドウがあればそれを、なければアプリを前面化する
+    /// Returns to a session in the Claude desktop app.
+    /// Raises the window matching the session title if one exists, otherwise just activates the app.
     private static func activateClaudeDesktop(_ session: AgentSession) {
         if let title = session.title,
            WindowRaiser.raiseWindow(bundleIds: claudeDesktopBundleIds, titleContains: title) {
@@ -75,8 +76,8 @@ enum FocusAction {
         "com.apple.Terminal",
     ]
 
-    /// ターミナルはウインドウタイトルに cwd のフォルダ名が含まれていればそれを前面化し、
-    /// 見つからなければ実行中のターミナルアプリを前面化する(ベストエフォート)
+    /// For terminals, raise the window whose title contains the cwd's folder name;
+    /// if none is found, activate a running terminal app instead (best effort)
     private static func activateTerminal(cwd: String) {
         let folderName = URL(fileURLWithPath: cwd).lastPathComponent
         if WindowRaiser.raiseWindow(bundleIds: terminalBundleIds, titleContains: folderName) {

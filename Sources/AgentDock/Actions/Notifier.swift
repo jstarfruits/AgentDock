@@ -1,19 +1,19 @@
 import AppKit
 import UserNotifications
 
-/// macOS 通知。
-/// .app バンドルとして実行されている場合は UNUserNotificationCenter を使う
-/// (通知クリックで Agent Dock が前面化する)。
-/// `swift run` などバンドル無しの開発実行では UNUserNotificationCenter が
-/// 使えないため osascript にフォールバックする(この場合クリック先は
-/// スクリプトエディタになってしまうが避けられない)。
+/// macOS notifications.
+/// When running as a .app bundle, uses UNUserNotificationCenter
+/// (clicking a notification brings Agent Dock to the front).
+/// UNUserNotificationCenter isn't available for unbundled development runs like
+/// `swift run`, so this falls back to osascript in that case (clicking the
+/// notification then opens Script Editor instead, which is unavoidable).
 enum Notifier {
-    /// .app バンドルとして起動しているか
+    /// Whether running as a .app bundle
     static var isBundledApp: Bool {
         Bundle.main.bundleIdentifier != nil && Bundle.main.bundlePath.hasSuffix(".app")
     }
 
-    /// 起動時に一度呼ぶ。バンドル実行時のみ通知権限を要求する
+    /// Call once at launch. Only requests notification permission when running as a bundle.
     static func setUp() {
         guard isBundledApp else { return }
         UNUserNotificationCenter.current()

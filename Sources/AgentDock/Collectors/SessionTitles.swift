@@ -1,8 +1,8 @@
 import Foundation
 
-/// Claude デスクトップアプリが保存するセッションタイトルの索引
-/// (~/Library/Application Support/Claude/claude-code-sessions/**.json)。
-/// VS Code / CLI セッションのタイトルはここには存在しない。
+/// Index of session titles saved by the Claude desktop app
+/// (~/Library/Application Support/Claude/claude-code-sessions/**.json).
+/// VS Code / CLI session titles do not exist here.
 final class ClaudeDesktopTitleIndex {
     static let shared = ClaudeDesktopTitleIndex()
 
@@ -40,15 +40,15 @@ final class ClaudeDesktopTitleIndex {
     }
 }
 
-/// タイトルの記録がないセッション向けに、最初のユーザープロンプトの抜粋を
-/// 疑似タイトルとして使う。セッションの先頭は変化しないためキャッシュする。
+/// For sessions without a recorded title, uses an excerpt of the first user prompt
+/// as a pseudo-title. Cached because the start of a session never changes.
 final class FirstPromptCache {
     static let shared = FirstPromptCache()
 
     private enum Entry {
         case found(String)
-        /// 見つからなかった時刻。書き込み中のファイルはまだプロンプトが無いことが
-        /// あるため、一定時間後に再試行する
+        /// Timestamp when the prompt wasn't found. A file still being written may not
+        /// have a prompt yet, so retry after a delay.
         case missing(Date)
     }
 
@@ -57,8 +57,9 @@ final class FirstPromptCache {
     private static let maxLength = 60
     private static let retryInterval: TimeInterval = 120
 
-    /// Claude Code トランスクリプト(先頭側の user エントリ)から抽出。
-    /// 先頭はコマンド展開・ツール結果で埋まることがあるため広めに読む(結果はキャッシュ)
+    /// Extracts from a Claude Code transcript (user entries near the start).
+    /// The start can be filled with command expansions or tool results, so this reads a
+    /// wide window (the result is cached).
     func firstPrompt(claudeTranscript url: URL) -> String? {
         cached(url.path) {
             for line in headLines(of: url, maxBytes: 8 * 1024 * 1024) {
@@ -74,7 +75,7 @@ final class FirstPromptCache {
         }
     }
 
-    /// Codex ロールアウト(先頭側の user メッセージ)から抽出
+    /// Extracts from a Codex rollout (user messages near the start)
     func firstPrompt(codexRollout url: URL) -> String? {
         cached(url.path) {
             for line in headLines(of: url) {
@@ -129,7 +130,8 @@ final class FirstPromptCache {
         return nil
     }
 
-    /// システム注入(コマンド展開・Caveat・スキル前文・継続セッションの引き継ぎ文など)を除外する
+    /// Filters out system-injected text (command expansions, caveats, skill preambles,
+    /// continued-session handoff text, etc.)
     private static let systemPrefixes = [
         "<",
         "[",

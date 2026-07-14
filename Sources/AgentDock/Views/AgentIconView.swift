@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 実行しているアプリのアイコンに、ステータス色のドットを右下バッジとして重ねる共通ビュー
+/// Shared view that overlays a status-color dot badge on the bottom-right of the running app's icon
 struct AgentIconView: View {
     let session: AgentSession
     var size: CGFloat = 22

@@ -1,6 +1,6 @@
 import Foundation
 
-/// `agentdock --dump` : UI を起動せずに収集結果を一度だけ出力する(デバッグ用)
+/// `agentdock --dump` : print collection results once without launching the UI (debug tool)
 enum DumpCommand {
     static func runIfRequested() {
         if CommandLine.arguments.contains("--ax-debug") {
@@ -39,16 +39,16 @@ enum DumpCommand {
             let title = session.title.map { String($0.prefix(40)) } ?? "-"
             print("[\(session.status.label)] \(session.source.rawValue) | \(session.name) | \(title) | \(session.displayPath) | \(time) | \(session.entrypoint ?? "-") | \(message)")
         }
-        print("計 \(sessions.count) 件")
+        print("total: \(sessions.count) sessions")
         exit(0)
     }
 
-    /// `agentdock --focus <path>` : 復帰動作を UI なしで試す(デバッグ用)
+    /// `agentdock --focus <path>` : try the focus/raise behavior without the UI (debug tool)
     private static func runFocusIfRequested() {
         guard let index = CommandLine.arguments.firstIndex(of: "--focus"),
               CommandLine.arguments.count > index + 1 else { return }
         let path = CommandLine.arguments[index + 1]
-        print("アクセシビリティ権限: \(WindowRaiser.ensurePermission() ? "あり" : "なし(アプリ前面化のみ)")")
+        print("accessibility permission: \(WindowRaiser.ensurePermission() ? "granted" : "not granted (app activation only)")")
         FocusAction.focus(AgentSession(
             id: "debug",
             source: .claudeCode,

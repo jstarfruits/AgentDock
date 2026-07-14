@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// 常時最前面パネルの中身。ウインドウサイズに追従してレイアウトする。
-/// ピン留め → 要対応 → 実行中 → 停滞中(折りたたみ) → アイドル件数 の順に表示する。
+/// Contents of the always-on-top panel. Lays out to follow the window size.
+/// Displayed in order: pinned → needs attention → running → stalled (collapsible) → idle count.
 struct FloatingPanelView: View {
     @ObservedObject var store: AgentStore
     @ObservedObject var panelState: PanelState
 
     @AppStorage("staleSectionExpanded") private var staleExpanded = false
-    /// アイコン+タイトルだけのグリッド表示モード
+    /// Grid display mode showing only icon + title
     @AppStorage("panelGridMode") private var gridMode = false
     @AppStorage(DisplayScale.textKey) private var textSize = DisplayScale.defaultValue
 
@@ -20,7 +20,7 @@ struct FloatingPanelView: View {
             header
             Divider()
             if mainSessions.isEmpty && store.staleSessions.isEmpty {
-                Text("対応待ち・実行中のエージェントはありません")
+                Text(loc("panel.empty"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -38,7 +38,7 @@ struct FloatingPanelView: View {
             }
             if !store.idleSessions.isEmpty {
                 Divider()
-                Text("アイドル \(store.idleSessions.count) 件")
+                Text(loc("panel.idleCount", store.idleSessions.count))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .padding(.horizontal, 10)
@@ -53,7 +53,7 @@ struct FloatingPanelView: View {
         )
     }
 
-    /// 表示モードに応じてリスト行またはグリッドで描画する
+    /// Renders as list rows or a grid depending on the display mode
     @ViewBuilder
     private func sessionsView(_ sessions: [AgentSession]) -> some View {
         if gridMode {
@@ -81,7 +81,7 @@ struct FloatingPanelView: View {
         )
     }
 
-    /// 長時間放置された要対応の折りたたみセクション
+    /// Collapsible section for needs-attention sessions left unattended for a long time
     private var staleSection: some View {
         VStack(alignment: .leading, spacing: 1) {
             Button {
@@ -90,7 +90,7 @@ struct FloatingPanelView: View {
                 HStack(spacing: 4) {
                     Image(systemName: staleExpanded ? "chevron.down" : "chevron.right")
                         .font(.system(size: 8))
-                    Text("停滞中 \(store.staleSessions.count) 件")
+                    Text(loc("panel.staleCount", store.staleSessions.count))
                         .font(.caption2)
                     Spacer()
                 }
@@ -131,14 +131,14 @@ struct FloatingPanelView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
-            .help(gridMode ? "リスト表示に切り替え" : "グリッド表示に切り替え")
+            .help(gridMode ? loc("help.listMode") : loc("help.gridMode"))
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
     }
 }
 
-/// macOS の信号機(閉じる)ボタン風の赤い丸ボタン。ホバーで × が現れる。
+/// A red circular button styled like macOS's traffic-light (close) button. Shows an × on hover.
 private struct TrafficLightCloseButton: View {
     let action: () -> Void
     @State private var isHovering = false
@@ -160,6 +160,6 @@ private struct TrafficLightCloseButton: View {
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
-        .help("パネルを隠す(メニューバーから再表示できます)")
+        .help(loc("help.hidePanel"))
     }
 }

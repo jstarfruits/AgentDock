@@ -1,13 +1,13 @@
 import Foundation
 
-/// ~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl から Codex セッションの状態を収集する。
-/// Codex はライブセッションのレジストリを持たないため、直近24時間に
-/// 更新のあったロールアウトファイルを対象とする。
+/// Collects Codex session state from ~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl.
+/// Codex has no live session registry, so this targets rollout files updated
+/// within the last 24 hours.
 struct CodexCollector: Collector {
     static let activeWindow: TimeInterval = 24 * 60 * 60
     static let runningWindow: TimeInterval = 60
-    /// Codex はプロセス生存確認ができないため、この時間より古いセッションは
-    /// 完了していても「要対応」ではなく「アイドル」として扱う
+    /// Codex has no way to check process liveness, so sessions older than this are
+    /// treated as "idle" rather than "needs attention" even if they finished
     static let attentionWindow: TimeInterval = 2 * 60 * 60
 
     private var sessionsDir: URL {
@@ -31,7 +31,7 @@ struct CodexCollector: Collector {
         return sessions
     }
 
-    /// 今日と昨日の日付ディレクトリ(24時間窓をカバー)
+    /// Today's and yesterday's date directories (covers the 24-hour window)
     private func recentDayDirectories() -> [URL] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy/MM/dd"
@@ -62,12 +62,12 @@ struct CodexCollector: Collector {
         )
     }
 
-    /// 末尾側から直近のアシスタント発言の抜粋を取り出す
+    /// Extracts an excerpt of the most recent assistant message, searching from the end
     private func latestAssistantText(of file: URL) -> String? {
         for line in JSONLFile.tailLines(of: file).reversed() {
             guard let obj = JSONLFile.parse(line),
                   let payload = obj["payload"] as? [String: Any] else { continue }
-            // task_complete イベントは最終メッセージをそのまま持っている
+            // task_complete events carry the final message directly
             if obj["type"] as? String == "event_msg",
                let text = payload["last_agent_message"] as? String, !text.isEmpty {
                 return AgentSession.snippet(of: text)
@@ -91,8 +91,8 @@ struct CodexCollector: Collector {
         if Date().timeIntervalSince(mtime) > Self.attentionWindow {
             return .idle
         }
-        // 末尾から直近のイベントを見て状態を判定する。
-        // task_complete = ターン完了(ユーザー入力待ち)、task_started = 実行中。
+        // Determine status from the most recent event, searching from the end.
+        // task_complete = turn finished (waiting for user input), task_started = running.
         for line in JSONLFile.tailLines(of: file).reversed() {
             guard let obj = JSONLFile.parse(line),
                   let payload = obj["payload"] as? [String: Any] else { continue }
@@ -108,7 +108,7 @@ struct CodexCollector: Collector {
                 }
             case "response_item":
                 if payload["type"] as? String == "message" {
-                    // assistant メッセージで止まっていれば入力待ち、user なら実行中
+                    // If it stopped on an assistant message, waiting for input; if user, running
                     return payload["role"] as? String == "assistant" ? .needsAttention : .running
                 }
                 continue

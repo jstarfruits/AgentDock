@@ -1,0 +1,38 @@
+/* Agent status */
+"status.needsAttention" = "Needs attention";
+"status.running" = "Running";
+"status.idle" = "Idle";
+
+/* Menu bar menu */
+"menu.noAgents" = "No agents are being monitored";
+"section.pinned" = "Pinned";
+"section.stalled" = "Stalled";
+"menu.showTitles" = "Show session titles";
+"menu.textSize" = "Text size";
+"menu.iconSize" = "Icon size";
+"size.small" = "Small";
+"size.medium" = "Medium";
+"size.large" = "Large";
+"menu.launchAtLogin" = "Launch at login";
+"menu.hidePanel" = "Hide panel";
+"menu.showPanel" = "Show panel";
+"menu.quit" = "Quit Agent Dock";
+
+/* Floating panel */
+"panel.empty" = "No agents need attention or are running";
+"panel.staleCount" = "Stalled: %d";
+"panel.idleCount" = "Idle: %d";
+
+/* Tooltips */
+"help.hidePanel" = "Hide the panel (reopen it from the menu bar)";
+"help.listMode" = "Switch to list view";
+"help.gridMode" = "Switch to grid view";
+"help.pin" = "Keep at the top";
+"help.unpin" = "Unpin";
+"help.focus" = "Click to jump back to %@";
+
+/* Relative time */
+"time.now" = "now";
+
+/* Notifications */
+"notification.needsAttention" = "%@ (%@) is waiting for your input";

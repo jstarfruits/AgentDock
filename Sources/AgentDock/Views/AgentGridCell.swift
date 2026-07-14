@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// グリッド表示モードの1セル(アイコン+タイトルのみ)。クリックで復帰。
+/// A single cell in grid display mode (icon + title only). Clicking returns to the session.
 struct AgentGridCell: View {
     let session: AgentSession
     var isPinned = false

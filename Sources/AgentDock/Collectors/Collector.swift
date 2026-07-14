@@ -1,11 +1,11 @@
 import Foundation
 
-/// ローカルのデータソースから AgentSession の一覧を収集する
+/// Collects a list of AgentSession from local data sources
 protocol Collector {
     func collect() -> [AgentSession]
 }
 
-/// プロセスが生存しているか(EPERM は「存在するが権限なし」なので生存扱い)
+/// Whether a process is alive (EPERM means "exists but no permission", so counts as alive)
 func isProcessAlive(_ pid: Int32) -> Bool {
     guard pid > 0 else { return false }
     if kill(pid, 0) == 0 { return true }
@@ -13,7 +13,7 @@ func isProcessAlive(_ pid: Int32) -> Bool {
 }
 
 enum JSONLFile {
-    /// ファイル末尾 maxBytes 分から完全な行だけを取り出す(巨大トランスクリプト対策)
+    /// Extracts only complete lines from the last maxBytes of a file (handles huge transcripts)
     static func tailLines(of url: URL, maxBytes: Int = 65536) -> [String] {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return [] }
         defer { try? handle.close() }
@@ -23,14 +23,14 @@ enum JSONLFile {
               let data = try? handle.readToEnd() else { return [] }
         var lines = data.split(separator: UInt8(ascii: "\n"))
             .compactMap { String(data: Data($0), encoding: .utf8) }
-        // 途中から読んだ場合、先頭の行は欠けている可能性があるので捨てる
+        // When reading from the middle, the first line may be truncated, so drop it
         if offset > 0, !lines.isEmpty {
             lines.removeFirst()
         }
         return lines
     }
 
-    /// ファイル先頭の1行目を返す(セッションメタデータ用)
+    /// Returns the first line of a file (used for session metadata)
     static func firstLine(of url: URL, maxBytes: Int = 32768) -> String? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }

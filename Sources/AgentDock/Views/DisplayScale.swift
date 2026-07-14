@@ -1,7 +1,7 @@
 import Foundation
 
-/// 文字・アイコンの表示サイズ設定(小/中/大)を倍率に変換する。
-/// UserDefaults には "small" / "medium" / "large" を保存する。
+/// Converts the text/icon display size setting (small/medium/large) into a scale factor.
+/// UserDefaults stores "small" / "medium" / "large".
 enum DisplayScale {
     static let textKey = "textSize"
     static let iconKey = "iconSize"
@@ -23,17 +23,18 @@ enum DisplayScale {
         }
     }
 
-    /// アイコン「大」は行が高くなるため、最新メッセージを2行表示できる
+    /// Icon size "large" makes rows taller, so the latest message can show 2 lines
     static func messageLineLimit(iconSize raw: String) -> Int {
         raw == "large" ? 2 : 1
     }
 }
 
-/// 一覧用の相対時刻表記。時計の丸め誤差で未来になった直近の時刻は「今」と表示する
+/// Relative time text for the list. A very recent timestamp that appears to be in the
+/// future due to clock rounding error is shown as "now".
 enum RelativeTime {
     static func string(for date: Date) -> String {
         if Date().timeIntervalSince(date) < 3 {
-            return "今"
+            return loc("time.now")
         }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated

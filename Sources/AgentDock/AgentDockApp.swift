@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     let panelState = PanelState()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Dock アイコンを出さないメニューバー常駐アプリとして動作させる
+        // Run as a menu bar resident app without showing a Dock icon
         NSApp.setActivationPolicy(.accessory)
         Notifier.setUp()
         store.start()
@@ -33,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 }
 
-/// メニューバー上のアイコン。要対応があれば件数付きで強調する。
+/// Icon shown in the menu bar. Highlighted with a count when sessions need attention.
 struct MenuBarLabel: View {
     @ObservedObject var store: AgentStore
 

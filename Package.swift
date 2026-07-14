@@ -3,11 +3,13 @@ import PackageDescription
 
 let package = Package(
     name: "AgentDock",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     targets: [
         .executableTarget(
             name: "AgentDock",
-            path: "Sources/AgentDock"
+            path: "Sources/AgentDock",
+            resources: [.process("Resources")]
         )
     ]
 )

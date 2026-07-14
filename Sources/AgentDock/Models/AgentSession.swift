@@ -1,6 +1,6 @@
 import Foundation
 
-/// 監視対象のツール種別
+/// Type of tool being monitored
 enum AgentSource: String, CaseIterable {
     case claudeCode = "Claude Code"
     case codex = "Codex"
@@ -15,7 +15,7 @@ enum AgentSource: String, CaseIterable {
     }
 }
 
-/// エージェントの現在状態。rawValue の昇順が表示優先順(要対応が最上位)。
+/// Current state of an agent. Ascending rawValue order is display priority (needsAttention first).
 enum AgentStatus: Int, Comparable {
     case needsAttention = 0
     case running = 1
@@ -27,14 +27,14 @@ enum AgentStatus: Int, Comparable {
 
     var label: String {
         switch self {
-        case .needsAttention: return "要対応"
-        case .running: return "実行中"
-        case .idle: return "アイドル"
+        case .needsAttention: return loc("status.needsAttention")
+        case .running: return loc("status.running")
+        case .idle: return loc("status.idle")
         }
     }
 }
 
-/// 1つのエージェントセッション(= ダッシュボードの1行)
+/// A single agent session (= one row in the dashboard)
 struct AgentSession: Identifiable, Equatable {
     let id: String
     let source: AgentSource
@@ -42,14 +42,14 @@ struct AgentSession: Identifiable, Equatable {
     let cwd: String
     let status: AgentStatus
     let lastActivity: Date
-    /// 起動元の種別(claude-vscode / cli / codex-tui など)。復帰先アプリの判定に使う
+    /// Kind of entrypoint (claude-vscode / cli / codex-tui, etc). Used to decide which app to bring forward.
     let entrypoint: String?
-    /// エージェントの最新メッセージの抜粋(取得できる場合のみ)
+    /// Excerpt of the agent's latest message (only when available)
     var lastMessage: String? = nil
-    /// セッションのタイトル(デスクトップアプリの記録、または最初のプロンプトの抜粋)
+    /// Session title (recorded by the desktop app, or an excerpt of the first prompt)
     var title: String? = nil
 
-    /// メッセージ本文を一覧表示用の1行スニペットに整形する
+    /// Format message text into a single-line snippet for list display
     static func snippet(of text: String, maxLength: Int = 150) -> String {
         let flattened = text
             .replacingOccurrences(of: "\n", with: " ")
@@ -57,7 +57,7 @@ struct AgentSession: Identifiable, Equatable {
         return String(flattened.prefix(maxLength))
     }
 
-    /// ホームディレクトリを ~ に短縮した表示用パス
+    /// Display path with the home directory abbreviated to ~
     var displayPath: String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         if cwd.hasPrefix(home) {

@@ -1,7 +1,7 @@
 import Foundation
 
-/// ~/.claude/ide/*.lock から、Claude Code 連携が動いている
-/// VS Code(系 IDE)の開いているワークスペースを収集する
+/// Collects open workspaces from ~/.claude/ide/*.lock for VS Code
+/// (or VS Code-family IDEs) with a running Claude Code integration
 struct VSCodeCollector: Collector {
     private struct LockFile: Decodable {
         let pid: Int32

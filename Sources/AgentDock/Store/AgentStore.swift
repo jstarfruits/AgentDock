@@ -1,10 +1,10 @@
 import Foundation
 import Combine
 
-/// 全 Collector を定期実行してセッション一覧を保持するストア
+/// Store that runs all collectors periodically and holds the session list
 @MainActor
 final class AgentStore: ObservableObject {
-    /// この時間更新のない「要対応」は停滞(stale)として扱う
+    /// A "needs attention" session with no update within this time is treated as stale
     static let staleThreshold: TimeInterval = 2 * 60 * 60
     private static let pinnedKey = "pinnedSessionIds"
 
@@ -12,14 +12,14 @@ final class AgentStore: ObservableObject {
     @Published private(set) var pinnedIds: Set<String> =
         Set(UserDefaults.standard.stringArray(forKey: AgentStore.pinnedKey) ?? [])
 
-    /// メニューバーのバッジ件数。停滞したものはピン留め中のみ数える
+    /// Badge count shown in the menu bar. Stalled sessions only count if pinned.
     var needsAttentionCount: Int {
         sessions.filter {
             $0.status == .needsAttention && (isPinned($0) || !isStale($0))
         }.count
     }
 
-    // MARK: - グルーピング(ピン留め → 要対応 → 実行中 → 停滞中 → アイドル)
+    // MARK: - Grouping (pinned → needs attention → running → stalled → idle)
 
     var pinnedSessions: [AgentSession] { sessions.filter { isPinned($0) } }
 
@@ -31,7 +31,7 @@ final class AgentStore: ObservableObject {
         sessions.filter { !isPinned($0) && $0.status == .running }
     }
 
-    /// 長時間放置された要対応
+    /// Needs-attention sessions left unattended for a long time
     var staleSessions: [AgentSession] {
         sessions.filter { !isPinned($0) && $0.status == .needsAttention && isStale($0) }
     }
@@ -83,7 +83,8 @@ final class AgentStore: ObservableObject {
     }
 
     private func apply(_ collected: [AgentSession]) {
-        // id 重複は先勝ちで除去し、要対応 → 実行中 → アイドル、各グループ内は新しい順に並べる
+        // Deduplicate ids keeping the first occurrence, then sort by needs attention → running → idle,
+        // most recent first within each group
         var seen = Set<String>()
         let unique = collected.filter { seen.insert($0.id).inserted }
         let sorted = unique.sorted {
@@ -91,14 +92,15 @@ final class AgentStore: ObservableObject {
             return $0.lastActivity > $1.lastActivity
         }
 
-        // 「要対応」への遷移を通知(起動直後の初回収集ではまとめて鳴らさない)
+        // Notify on transitions into "needs attention" (skip the batch of notifications on the
+        // very first collection right after launch)
         if hasRefreshedOnce {
             for session in sorted where session.status == .needsAttention
                 && previousStatuses[session.id] != .needsAttention
                 && previousStatuses[session.id] != nil {
                 Notifier.notify(
                     title: "Agent Dock",
-                    body: "\(session.name) (\(session.source.rawValue)) が対応待ちです"
+                    body: loc("notification.needsAttention", session.name, session.source.rawValue)
                 )
             }
         }

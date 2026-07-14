@@ -1,10 +1,11 @@
 import AppKit
 import ApplicationServices
 
-/// アクセシビリティAPIで既存ウインドウ・タブをタイトル一致で前面化する。
-/// 新しいウインドウは一切開かない。
+/// Uses the accessibility API to raise existing windows/tabs by title match.
+/// Never opens any new window.
 enum WindowRaiser {
-    /// アクセシビリティ権限の有無。prompt = true なら無い場合にシステムの許可ダイアログを出す
+    /// Whether accessibility permission is granted. If prompt = true and it isn't,
+    /// shows the system permission dialog.
     @discardableResult
     static func ensurePermission(prompt: Bool = false) -> Bool {
         if !prompt {
@@ -14,8 +15,8 @@ enum WindowRaiser {
         return AXIsProcessTrustedWithOptions(options)
     }
 
-    /// 指定 bundle id 群のアプリから、タイトルに `titleContains` を含むウインドウ
-    /// またはネイティブタブを探して前面化する
+    /// Among apps with the given bundle ids, finds a window or native tab whose title
+    /// contains `titleContains` and raises it.
     @discardableResult
     static func raiseWindow(bundleIds: [String], titleContains: String) -> Bool {
         guard AXIsProcessTrusted() else { return false }
@@ -25,16 +26,16 @@ enum WindowRaiser {
             let axApp = AXUIElementCreateApplication(app.processIdentifier)
             guard let windows = elements(of: axApp, attribute: kAXWindowsAttribute) else { continue }
 
-            // 1. ウインドウタイトルの一致(通常ウインドウ、および前面タブ)
+            // 1. Match on window title (regular windows, and the frontmost tab)
             for window in windows where matches(window, titleContains) {
                 raise(window: window, app: app)
                 return true
             }
-            // 2. ウィンドウメニューから選択(ネイティブタブ統合でも確実に切り替わる)
+            // 2. Select from the Window menu (reliably switches even with native tabs merged)
             if raiseViaWindowMenu(axApp: axApp, app: app, titleContains: titleContains) {
                 return true
             }
-            // 3. タブバー(AXTabGroup)のタブを直接押す(最終手段)
+            // 3. Press the tab directly in the tab bar (AXTabGroup) (last resort)
             for window in windows {
                 if pressTab(in: window, titleContains: titleContains) {
                     raise(window: window, app: app)
@@ -45,8 +46,8 @@ enum WindowRaiser {
         return false
     }
 
-    /// アプリの「ウィンドウ」メニュー末尾に並ぶウインドウ/タブ一覧から
-    /// タイトル一致する項目を選択する。ネイティブタブの切り替えにも効く。
+    /// Selects the item matching the title from the window/tab list at the end of the
+    /// app's "Window" menu. This also works for switching native tabs.
     private static func raiseViaWindowMenu(
         axApp: AXUIElement, app: NSRunningApplication, titleContains: String
     ) -> Bool {
@@ -58,12 +59,12 @@ enum WindowRaiser {
         let menuBar = menuBarValue as! AXUIElement
         guard let menus = elements(of: menuBar, attribute: kAXChildrenAttribute) else { return false }
 
-        // ウィンドウメニューはメニューバーの後方にあるため逆順に探す
+        // The Window menu is near the end of the menu bar, so search in reverse
         for menuBarItem in menus.reversed() {
             guard let submenus = elements(of: menuBarItem, attribute: kAXChildrenAttribute) else { continue }
             for submenu in submenus {
                 guard let items = elements(of: submenu, attribute: kAXChildrenAttribute) else { continue }
-                // ウインドウ一覧はメニューの末尾に並ぶので逆順に探す
+                // The window list is at the end of the menu, so search in reverse
                 for item in items.reversed() where matches(item, titleContains) {
                     if AXUIElementPerformAction(item, kAXPressAction as CFString) == .success {
                         app.activate()
@@ -92,9 +93,9 @@ enum WindowRaiser {
         return false
     }
 
-    /// ウインドウ内のタブバー(AXTabGroup)から一致するタブを探して選択する。
-    /// Electron 系はアクセシビリティツリーが巨大なため、探索は浅い階層に限定し
-    /// Web コンテンツ(AXWebArea)には入らない。
+    /// Finds and selects a matching tab from the tab bar (AXTabGroup) inside a window.
+    /// Electron-based apps have huge accessibility trees, so the search is limited to
+    /// shallow levels and never descends into web content (AXWebArea).
     private static func pressTab(in window: AXUIElement, titleContains: String) -> Bool {
         var queue: [(element: AXUIElement, depth: Int)] = [(window, 0)]
         while !queue.isEmpty {
@@ -131,12 +132,12 @@ enum WindowRaiser {
         return false
     }
 
-    // MARK: - デバッグ
+    // MARK: - Debugging
 
-    /// AX ツリーの浅い階層を出力する(構造調査用)
+    /// Prints the shallow levels of the AX tree (for structure investigation)
     static func dumpTree(bundleIds: [String], maxDepth: Int = 3) {
         guard AXIsProcessTrusted() else {
-            print("アクセシビリティ権限がありません")
+            print("Accessibility permission not granted")
             return
         }
         for app in NSWorkspace.shared.runningApplications {
@@ -144,7 +145,7 @@ enum WindowRaiser {
             print("=== \(bundleId) (pid \(app.processIdentifier)) ===")
             let axApp = AXUIElementCreateApplication(app.processIdentifier)
             guard let windows = elements(of: axApp, attribute: kAXWindowsAttribute) else {
-                print("  (AXWindows 取得失敗)")
+                print("  (failed to get AXWindows)")
                 continue
             }
             for (index, window) in windows.enumerated() {
@@ -167,7 +168,7 @@ enum WindowRaiser {
         }
     }
 
-    // MARK: - AX ヘルパー
+    // MARK: - AX helpers
 
     private static func elements(of element: AXUIElement, attribute: String) -> [AXUIElement]? {
         var value: CFTypeRef?

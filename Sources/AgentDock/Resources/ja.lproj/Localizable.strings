@@ -1,0 +1,38 @@
+/* エージェントの状態 */
+"status.needsAttention" = "要対応";
+"status.running" = "実行中";
+"status.idle" = "アイドル";
+
+/* メニューバーのメニュー */
+"menu.noAgents" = "監視中のエージェントはありません";
+"section.pinned" = "ピン留め";
+"section.stalled" = "停滞中";
+"menu.showTitles" = "セッションタイトルを表示";
+"menu.textSize" = "文字サイズ";
+"menu.iconSize" = "アイコンサイズ";
+"size.small" = "小";
+"size.medium" = "中";
+"size.large" = "大";
+"menu.launchAtLogin" = "ログイン時に起動";
+"menu.hidePanel" = "パネルを隠す";
+"menu.showPanel" = "パネルを表示";
+"menu.quit" = "Agent Dock を終了";
+
+/* フローティングパネル */
+"panel.empty" = "対応待ち・実行中のエージェントはありません";
+"panel.staleCount" = "停滞中 %d 件";
+"panel.idleCount" = "アイドル %d 件";
+
+/* ツールチップ */
+"help.hidePanel" = "パネルを隠す(メニューバーから再表示できます)";
+"help.listMode" = "リスト表示に切り替え";
+"help.gridMode" = "グリッド表示に切り替え";
+"help.pin" = "常に上部に表示する";
+"help.unpin" = "ピンを外す";
+"help.focus" = "クリックで %@ に戻る";
+
+/* 相対時刻 */
+"time.now" = "今";
+
+/* 通知 */
+"notification.needsAttention" = "%@ (%@) が対応待ちです";

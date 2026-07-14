@@ -13,6 +13,9 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 cp .build/release/AgentDock "$APP/Contents/MacOS/AgentDock"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+# SwiftPM resource bundle (localized strings) — Bundle.module looks for it
+# inside Contents/Resources of the app bundle
+cp -R .build/release/AgentDock_AgentDock.bundle "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -37,6 +40,15 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ja</string>
+	</array>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 	<key>LSUIElement</key>
 	<true/>
 </dict>

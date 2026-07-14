@@ -1,10 +1,9 @@
 import Foundation
 
-/// ~/.claude/sessions/*.json(ライブセッション)と
-/// ~/.claude/projects/<slug>/<sessionId>.jsonl(トランスクリプト)から
-/// Claude Code セッションの状態を収集する
+/// Collects Claude Code session state from ~/.claude/sessions/*.json (live sessions)
+/// and ~/.claude/projects/<slug>/<sessionId>.jsonl (transcripts)
 struct ClaudeCodeCollector: Collector {
-    /// 直近この秒数以内にトランスクリプトが更新されていれば「実行中」とみなす
+    /// If the transcript was updated within this many seconds, treat the session as "running"
     static let runningWindow: TimeInterval = 60
 
     private struct SessionFile: Decodable {
@@ -49,7 +48,7 @@ struct ClaudeCodeCollector: Collector {
                 lastMessage: lastMessage,
                 title: title
             )
-            // 同一セッションを指す複数の pid ファイルがある場合は新しい方を残す
+            // If multiple pid files reference the same session, keep the more recent one
             if let existing = bySessionId[meta.sessionId],
                existing.lastActivity >= session.lastActivity { continue }
             bySessionId[meta.sessionId] = session
@@ -57,7 +56,7 @@ struct ClaudeCodeCollector: Collector {
         return Array(bySessionId.values)
     }
 
-    /// cwd を Claude Code のプロジェクトディレクトリ名に変換(非英数字をすべて "-" に)
+    /// Converts a cwd into a Claude Code project directory name (non-alphanumeric chars become "-")
     static func projectSlug(for cwd: String) -> String {
         String(cwd.map { ch in
             (ch.isASCII && (ch.isLetter || ch.isNumber)) ? ch : "-"
@@ -81,14 +80,14 @@ struct ClaudeCodeCollector: Collector {
         let lines = JSONLFile.tailLines(of: transcript).reversed()
         let lastMessage = latestAssistantText(in: lines)
 
-        // 末尾から直近の user / assistant エントリを探す
+        // Find the most recent user/assistant entry, searching from the end
         for line in lines {
             guard let obj = JSONLFile.parse(line),
                   let type = obj["type"] as? String else { continue }
             if type == "assistant" {
                 let message = obj["message"] as? [String: Any]
                 if message?["stop_reason"] as? String == "end_turn" {
-                    // ターンが完了してユーザーの入力待ち
+                    // Turn finished; waiting for user input
                     return (.needsAttention, mtime, lastMessage)
                 }
                 break
@@ -102,7 +101,7 @@ struct ClaudeCodeCollector: Collector {
         return (.idle, mtime, lastMessage)
     }
 
-    /// 末尾側から、テキストを含む直近の assistant メッセージの抜粋を取り出す
+    /// Extracts an excerpt of the most recent assistant message containing text, searching from the end
     private func latestAssistantText(in reversedLines: ReversedCollection<[String]>) -> String? {
         for line in reversedLines {
             guard let obj = JSONLFile.parse(line),

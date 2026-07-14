@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// セッション一覧の1行。クリックで該当の作業場所へ復帰する。
+/// A single row in the session list. Clicking returns to the corresponding workspace.
 struct AgentRowView: View {
     let session: AgentSession
     var compact = false
@@ -8,7 +8,7 @@ struct AgentRowView: View {
     var onTogglePin: (() -> Void)?
 
     @State private var isHovering = false
-    /// 行の主表示をセッションタイトルにするか(オフならセッション名)。メニューから切替
+    /// Whether the row's primary text is the session title (off = session name). Toggled from the menu.
     @AppStorage("showSessionTitles") private var showTitles = true
     @AppStorage(DisplayScale.textKey) private var textSize = DisplayScale.defaultValue
     @AppStorage(DisplayScale.iconKey) private var iconSize = DisplayScale.defaultValue
@@ -45,7 +45,7 @@ struct AgentRowView: View {
                                     .foregroundStyle(isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
                             }
                             .buttonStyle(.plain)
-                            .help(isPinned ? "ピンを外す" : "常に上部に表示する")
+                            .help(isPinned ? loc("help.unpin") : loc("help.pin"))
                         }
                         Text(relativeTime)
                             .font(.system(size: secondaryFontSize))
@@ -76,7 +76,7 @@ struct AgentRowView: View {
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
-        .help("クリックで \(session.name) に戻る")
+        .help(loc("help.focus", session.name))
     }
 
     private var iconWithStatusBadge: some View {
