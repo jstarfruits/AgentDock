@@ -5,7 +5,7 @@ import Combine
 @MainActor
 final class AgentStore: ObservableObject {
     /// A "needs attention" session with no update within this time is treated as stale
-    static let staleThreshold: TimeInterval = 2 * 60 * 60
+    nonisolated static let staleThreshold: TimeInterval = 2 * 60 * 60
     private static let pinnedKey = "pinnedSessionIds"
 
     @Published private(set) var sessions: [AgentSession] = []

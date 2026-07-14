@@ -38,8 +38,8 @@ struct AgentIconView: View {
 
     private var statusColor: Color {
         switch session.status {
-        case .needsAttention: return .orange
-        case .running: return .green
+        case .needsAttention: return .green
+        case .running: return .orange
         case .idle: return .secondary.opacity(0.5)
         }
     }

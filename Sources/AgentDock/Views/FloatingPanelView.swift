@@ -120,7 +120,7 @@ struct FloatingPanelView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(.orange, in: Capsule())
+                    .background(.green, in: Capsule())
             }
             Spacer()
             Button {

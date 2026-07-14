@@ -39,7 +39,13 @@ enum DumpCommand {
             let title = session.title.map { String($0.prefix(40)) } ?? "-"
             print("[\(session.status.label)] \(session.source.rawValue) | \(session.name) | \(title) | \(session.displayPath) | \(time) | \(session.entrypoint ?? "-") | \(message)")
         }
+        let now = Date()
+        let badge = sessions.filter {
+            !$0.isAutomated && $0.status == .needsAttention
+                && now.timeIntervalSince($0.lastActivity) < AgentStore.staleThreshold
+        }
         print("total: \(sessions.count) sessions")
+        print("menu-bar badge (needs-attention within 2h, excl. automated): \(badge.count) -> \(badge.map(\.name).joined(separator: ", "))")
         exit(0)
     }
 
