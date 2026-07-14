@@ -28,3 +28,15 @@ enum DisplayScale {
         raw == "large" ? 2 : 1
     }
 }
+
+/// 一覧用の相対時刻表記。時計の丸め誤差で未来になった直近の時刻は「今」と表示する
+enum RelativeTime {
+    static func string(for date: Date) -> String {
+        if Date().timeIntervalSince(date) < 3 {
+            return "今"
+        }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+}

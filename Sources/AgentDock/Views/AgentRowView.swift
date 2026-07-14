@@ -29,9 +29,8 @@ struct AgentRowView: View {
         Button {
             FocusAction.focus(session)
         } label: {
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 iconWithStatusBadge
-                    .padding(.top, 1)
 
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(alignment: .firstTextBaseline) {
@@ -85,8 +84,6 @@ struct AgentRowView: View {
     }
 
     private var relativeTime: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: session.lastActivity, relativeTo: Date())
+        RelativeTime.string(for: session.lastActivity)
     }
 }

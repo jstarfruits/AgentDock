@@ -110,9 +110,6 @@ struct MenuContentView: View {
 
     private func itemTitle(_ session: AgentSession) -> String {
         let name = showTitles ? (session.title ?? session.name) : session.name
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        let time = formatter.localizedString(for: session.lastActivity, relativeTo: Date())
-        return "\(name) — \(time)"
+        return "\(name) — \(RelativeTime.string(for: session.lastActivity))"
     }
 }
