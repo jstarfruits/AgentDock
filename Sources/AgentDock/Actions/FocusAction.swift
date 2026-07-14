@@ -14,13 +14,19 @@ enum FocusAction {
             } else if session.entrypoint?.contains("claude-desktop") == true {
                 activateClaudeDesktop(session)
             } else {
-                activateTerminal(cwd: session.cwd)
+                // Terminal-based Claude Code (cli): raise the matching window,
+                // else fall back to a running terminal app.
+                if !activateTerminal(cwd: session.cwd) {
+                    activateApp(bundleIds: terminalBundleIds)
+                }
             }
         case .codex:
-            if session.entrypoint?.contains("vscode") == true {
+            // Codex runs have no reliable window to return to — a `codex exec`
+            // background task was never attached to a terminal at all. Prefer a
+            // terminal window whose title matches the cwd, otherwise fall back to
+            // the project's VS Code window. Never raise an unrelated terminal.
+            if !activateTerminal(cwd: session.cwd) {
                 openInVSCode(session.cwd)
-            } else {
-                activateTerminal(cwd: session.cwd)
             }
         }
     }
@@ -76,13 +82,12 @@ enum FocusAction {
         "com.apple.Terminal",
     ]
 
-    /// For terminals, raise the window whose title contains the cwd's folder name;
-    /// if none is found, activate a running terminal app instead (best effort)
-    private static func activateTerminal(cwd: String) {
+    /// Raises the terminal window whose title contains the cwd's folder name.
+    /// Returns whether such a window was found. Never opens a new terminal or
+    /// raises an unrelated one — the caller decides the fallback.
+    @discardableResult
+    private static func activateTerminal(cwd: String) -> Bool {
         let folderName = URL(fileURLWithPath: cwd).lastPathComponent
-        if WindowRaiser.raiseWindow(bundleIds: terminalBundleIds, titleContains: folderName) {
-            return
-        }
-        activateApp(bundleIds: terminalBundleIds)
+        return WindowRaiser.raiseWindow(bundleIds: terminalBundleIds, titleContains: folderName)
     }
 }
