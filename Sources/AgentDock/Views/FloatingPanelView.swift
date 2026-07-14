@@ -9,6 +9,7 @@ struct FloatingPanelView: View {
     @AppStorage("staleSectionExpanded") private var staleExpanded = false
     /// アイコン+タイトルだけのグリッド表示モード
     @AppStorage("panelGridMode") private var gridMode = false
+    @AppStorage("textScale") private var textScale = 1.0
 
     private var mainSessions: [AgentSession] {
         store.pinnedSessions + store.attentionSessions + store.runningSessions
@@ -57,7 +58,7 @@ struct FloatingPanelView: View {
     private func sessionsView(_ sessions: [AgentSession]) -> some View {
         if gridMode {
             LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 88), spacing: 4)],
+                columns: [GridItem(.adaptive(minimum: 88 * textScale), spacing: 4)],
                 spacing: 4
             ) {
                 ForEach(sessions) { session in

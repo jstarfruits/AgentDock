@@ -10,9 +10,19 @@ struct AgentRowView: View {
     @State private var isHovering = false
     /// 行の主表示をセッションタイトルにするか(オフならセッション名)。メニューから切替
     @AppStorage("showSessionTitles") private var showTitles = true
+    @AppStorage("textScale") private var textScale = 1.0
+    @AppStorage("iconScale") private var iconScale = 1.0
 
     private var primaryText: String {
         showTitles ? (session.title ?? session.name) : session.name
+    }
+
+    private var primaryFontSize: CGFloat {
+        (compact ? 11 : 13) * textScale
+    }
+
+    private var secondaryFontSize: CGFloat {
+        10 * textScale
     }
 
     var body: some View {
@@ -26,8 +36,7 @@ struct AgentRowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(alignment: .firstTextBaseline) {
                         Text(primaryText)
-                            .font(compact ? .caption : .callout)
-                            .fontWeight(.medium)
+                            .font(.system(size: primaryFontSize, weight: .medium))
                             .lineLimit(1)
                         Spacer(minLength: 8)
                         if let onTogglePin, isHovering || isPinned {
@@ -40,19 +49,19 @@ struct AgentRowView: View {
                             .help(isPinned ? "ピンを外す" : "常に上部に表示する")
                         }
                         Text(relativeTime)
-                            .font(.caption2)
+                            .font(.system(size: secondaryFontSize))
                             .foregroundStyle(.secondary)
                     }
                     if !compact {
                         Text(session.displayPath)
-                            .font(.caption2)
+                            .font(.system(size: secondaryFontSize))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .truncationMode(.head)
                     }
                     if let message = session.lastMessage {
                         Text(message)
-                            .font(.caption2)
+                            .font(.system(size: secondaryFontSize))
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
@@ -72,7 +81,7 @@ struct AgentRowView: View {
     }
 
     private var iconWithStatusBadge: some View {
-        AgentIconView(session: session, size: compact ? 18 : 22)
+        AgentIconView(session: session, size: (compact ? 18 : 22) * iconScale)
     }
 
     private var relativeTime: String {

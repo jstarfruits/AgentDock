@@ -7,6 +7,8 @@ struct AgentGridCell: View {
 
     @State private var isHovering = false
     @AppStorage("showSessionTitles") private var showTitles = true
+    @AppStorage("textScale") private var textScale = 1.0
+    @AppStorage("iconScale") private var iconScale = 1.0
 
     private var primaryText: String {
         showTitles ? (session.title ?? session.name) : session.name
@@ -17,7 +19,7 @@ struct AgentGridCell: View {
             FocusAction.focus(session)
         } label: {
             VStack(spacing: 3) {
-                AgentIconView(session: session, size: 26)
+                AgentIconView(session: session, size: 26 * iconScale)
                     .overlay(alignment: .topTrailing) {
                         if isPinned {
                             Image(systemName: "pin.fill")
@@ -27,7 +29,7 @@ struct AgentGridCell: View {
                         }
                     }
                 Text(primaryText)
-                    .font(.caption2)
+                    .font(.system(size: 10 * textScale))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity)

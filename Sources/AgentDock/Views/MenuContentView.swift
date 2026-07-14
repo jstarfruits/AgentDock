@@ -1,4 +1,24 @@
 import SwiftUI
+import ServiceManagement
+
+/// ログイン項目(自動起動)の登録状態。.app バンドル実行時のみ利用できる
+@MainActor
+final class LoginItem: ObservableObject {
+    @Published private(set) var isEnabled = SMAppService.mainApp.status == .enabled
+
+    func set(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            // 登録失敗時は現状ステータスに合わせて表示を戻す
+        }
+        isEnabled = SMAppService.mainApp.status == .enabled
+    }
+}
 
 /// メニューバーの標準メニュー(NSMenuスタイル)。
 /// 項目クリックで該当セッションへ復帰。停滞中・アイドルはサブメニューに畳む。
@@ -6,6 +26,9 @@ struct MenuContentView: View {
     @ObservedObject var store: AgentStore
     @ObservedObject var panelState: PanelState
     @AppStorage("showSessionTitles") private var showTitles = true
+    @AppStorage("textScale") private var textScale = 1.0
+    @AppStorage("iconScale") private var iconScale = 1.0
+    @StateObject private var loginItem = LoginItem()
 
     var body: some View {
         if store.sessions.isEmpty {
@@ -28,6 +51,22 @@ struct MenuContentView: View {
         Divider()
 
         Toggle("セッションタイトルを表示", isOn: $showTitles)
+        Picker("文字サイズ", selection: $textScale) {
+            Text("小").tag(0.9)
+            Text("中").tag(1.0)
+            Text("大").tag(1.2)
+        }
+        Picker("アイコンサイズ", selection: $iconScale) {
+            Text("小").tag(0.85)
+            Text("中").tag(1.0)
+            Text("大").tag(1.25)
+        }
+        if Notifier.isBundledApp {
+            Toggle("ログイン時に起動", isOn: Binding(
+                get: { loginItem.isEnabled },
+                set: { loginItem.set($0) }
+            ))
+        }
         Button(panelState.isVisible ? "パネルを隠す" : "パネルを表示") {
             panelState.toggle()
         }
