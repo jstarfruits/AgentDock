@@ -21,7 +21,13 @@ struct AgentDockApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    let store = AgentStore()
+    /// `--demo` shows fixed fake sessions instead of reading real local data
+    /// (used for taking screenshots without exposing real project data).
+    private static var isDemo: Bool { CommandLine.arguments.contains("--demo") }
+
+    let store = AgentStore(collectors: AppDelegate.isDemo ? [DemoCollector()] : [
+        ClaudeCodeCollector(), CodexCollector(), VSCodeCollector(),
+    ])
     let panelState = PanelState()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -30,6 +36,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         Notifier.setUp()
         store.start()
         panelState.attach(store: store)
+        if Self.isDemo {
+            // Pin one session so the screenshot also shows the pinned section
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                if let session = store.sessions.first(where: { $0.id == "demo:1" }) {
+                    store.togglePin(session)
+                }
+            }
+        }
     }
 }
 

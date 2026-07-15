@@ -84,11 +84,17 @@ final class AgentStore: ObservableObject {
         }
     }
 
-    private let collectors: [Collector] = [
+    private let collectors: [Collector]
+
+    /// `collectors` defaults to the real local-data collectors; pass `[DemoCollector()]`
+    /// (via `--demo`) to show fixed fake sessions instead, e.g. for screenshots.
+    init(collectors: [Collector] = [
         ClaudeCodeCollector(),
         CodexCollector(),
         VSCodeCollector(),
-    ]
+    ]) {
+        self.collectors = collectors
+    }
     private var timer: Timer?
     private var previousStatuses: [String: AgentStatus] = [:]
     private var hasRefreshedOnce = false
