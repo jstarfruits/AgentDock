@@ -55,7 +55,9 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 </plist>
 EOF
 
-codesign --force -s "Agent Dev" "$APP"
+IDENTITY_NAME="Agent Dev"
+./scripts/ensure-signing-identity.sh "$IDENTITY_NAME"
+codesign --force -s "$IDENTITY_NAME" "$APP"
 
 echo "built: $APP"
 

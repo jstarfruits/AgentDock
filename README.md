@@ -70,8 +70,21 @@ Clicking a row only **raises an existing window** — it never opens a new one.
   activates the app
 
 Grant permission under System Settings > Privacy & Security > Accessibility, for
-AgentDock.app (or `.build/debug/AgentDock` during development). Rebuilding changes the
-code signature, so you may need to re-grant permission (toggle it off, then on again).
+AgentDock.app. `build-app.sh` signs every build with a stable local identity (created
+automatically on first run — see [Code signing](#code-signing)), so permissions persist
+across rebuilds. Running `.build/debug/AgentDock` directly during development is
+unsigned, so in that case you may need to re-grant permission each time.
+
+### Code signing
+
+`build-app.sh` calls `scripts/ensure-signing-identity.sh` on every build, which creates
+a local code-signing certificate named `Agent Dev` in your login keychain the first time
+it's needed (pure `openssl` + `security`, no Apple Developer account or GUI steps
+required). Signing consistently with this identity means macOS recognizes the app as the
+same one after every rebuild, so Accessibility/notification permissions granted once
+stay granted. Ad-hoc signing (`-s -`) has no fixed per-app identity, so each rebuild used
+to look like a different app and silently revoked those permissions — that's why it's
+not used here.
 
 ## Design principles
 
@@ -83,7 +96,7 @@ code signature, so you may need to re-grant permission (toggle it off, then on a
 
 - Integration with the Claude (claude.ai) desktop app
 - Precise detection of pending permission prompts
-- Distribution with a stable signature (to avoid having to re-grant accessibility permission)
+- Distribution signed with an Apple Developer ID and notarized (currently local self-signed only)
 
 ## License
 
