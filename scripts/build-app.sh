@@ -55,7 +55,7 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 </plist>
 EOF
 
-codesign --force -s - "$APP"
+codesign --force -s "Agent Dev" "$APP"
 
 echo "built: $APP"
 
