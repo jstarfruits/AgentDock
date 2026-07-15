@@ -18,6 +18,10 @@ in an always-on-top floating panel and in the menu bar. Click a row to jump stra
 to that app or workspace. The UI is localized in English and Japanese and follows your
 system language automatically.
 
+<p align="center">
+  <img src="docs/screenshots/panel-list.png" width="560" alt="Agent Dock's floating panel, showing a pinned session, one needing attention, one running, and a collapsed stalled section">
+</p>
+
 ## Supported tools (MVP)
 
 | Tool | Data source | What's detected |
@@ -85,6 +89,21 @@ same one after every rebuild, so Accessibility/notification permissions granted 
 stay granted. Ad-hoc signing (`-s -`) has no fixed per-app identity, so each rebuild used
 to look like a different app and silently revoked those permissions — that's why it's
 not used here.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/panel-grid.png" width="360" alt="Grid view — icon and title only"><br>
+      <sub>Grid view (icon + title only)</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/menu-bar.png" width="360" alt="Standard menu bar dropdown, grouped by session status"><br>
+      <sub>Menu bar dropdown</sub>
+    </td>
+  </tr>
+</table>
 
 ## Design principles
 
