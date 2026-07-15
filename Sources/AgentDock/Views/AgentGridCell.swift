@@ -4,6 +4,8 @@ import SwiftUI
 struct AgentGridCell: View {
     let session: AgentSession
     var isPinned = false
+    var onRename: (() -> Void)?
+    var onResetTitle: (() -> Void)?
 
     @State private var isHovering = false
     @AppStorage("showSessionTitles") private var showTitles = true
@@ -11,7 +13,7 @@ struct AgentGridCell: View {
     @AppStorage(DisplayScale.iconKey) private var iconSize = DisplayScale.defaultValue
 
     private var primaryText: String {
-        showTitles ? (session.title ?? session.name) : session.name
+        showTitles ? (session.displayTitle ?? session.name) : session.name
     }
 
     var body: some View {
@@ -46,6 +48,14 @@ struct AgentGridCell: View {
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .help(helpText)
+        .contextMenu {
+            if let onRename {
+                Button(loc("rename.menu"), action: onRename)
+            }
+            if session.customTitle != nil, let onResetTitle {
+                Button(loc("rename.reset"), action: onResetTitle)
+            }
+        }
     }
 
     private var helpText: String {

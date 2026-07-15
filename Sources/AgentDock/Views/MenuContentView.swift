@@ -109,7 +109,7 @@ struct MenuContentView: View {
     }
 
     private func itemTitle(_ session: AgentSession) -> String {
-        let name = showTitles ? (session.title ?? session.name) : session.name
+        let name = showTitles ? (session.displayTitle ?? session.name) : session.name
         return "\(name) — \(RelativeTime.string(for: session.lastActivity))"
     }
 }

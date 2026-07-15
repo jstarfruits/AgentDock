@@ -6,6 +6,8 @@ struct AgentRowView: View {
     var compact = false
     var isPinned = false
     var onTogglePin: (() -> Void)?
+    var onRename: (() -> Void)?
+    var onResetTitle: (() -> Void)?
 
     @State private var isHovering = false
     /// Whether the row's primary text is the session title (off = session name). Toggled from the menu.
@@ -14,7 +16,7 @@ struct AgentRowView: View {
     @AppStorage(DisplayScale.iconKey) private var iconSize = DisplayScale.defaultValue
 
     private var primaryText: String {
-        showTitles ? (session.title ?? session.name) : session.name
+        showTitles ? (session.displayTitle ?? session.name) : session.name
     }
 
     private var primaryFontSize: CGFloat {
@@ -84,6 +86,14 @@ struct AgentRowView: View {
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .help(loc("help.focus", session.name))
+        .contextMenu {
+            if let onRename {
+                Button(loc("rename.menu"), action: onRename)
+            }
+            if session.customTitle != nil, let onResetTitle {
+                Button(loc("rename.reset"), action: onResetTitle)
+            }
+        }
     }
 
     private var iconWithStatusBadge: some View {

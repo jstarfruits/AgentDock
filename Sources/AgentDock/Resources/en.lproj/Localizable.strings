@@ -33,6 +33,15 @@
 "help.unpin" = "Unpin";
 "help.focus" = "Click to jump back to %@";
 
+/* Renaming */
+"rename.menu" = "Rename Title…";
+"rename.reset" = "Reset Title";
+"rename.title" = "Rename session title";
+"rename.detail" = "Only changes how it appears in Agent Dock. The session data itself is not modified. Leave empty to restore the original title.";
+"rename.placeholder" = "Custom title";
+"rename.ok" = "OK";
+"rename.cancel" = "Cancel";
+
 /* Relative time */
 "time.now" = "now";
 

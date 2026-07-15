@@ -48,6 +48,15 @@ struct AgentSession: Identifiable, Equatable {
     var lastMessage: String? = nil
     /// Session title (recorded by the desktop app, or an excerpt of the first prompt)
     var title: String? = nil
+    /// User-defined title override, stored in Agent Dock's own defaults —
+    /// the underlying session data is never modified. Display uses this;
+    /// window-title matching (FocusAction) keeps using `title`.
+    var customTitle: String? = nil
+
+    /// Title to display in lists: the user's override wins over the recorded one
+    var displayTitle: String? {
+        customTitle ?? title
+    }
     /// Whether this is a non-interactive / background run (e.g. `codex exec`,
     /// a headless session). Such sessions are nested under their parent and
     /// do not raise notifications.

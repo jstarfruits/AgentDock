@@ -33,6 +33,15 @@
 "help.unpin" = "ピンを外す";
 "help.focus" = "クリックで %@ に戻る";
 
+/* タイトル変更 */
+"rename.menu" = "タイトルを変更…";
+"rename.reset" = "タイトルを元に戻す";
+"rename.title" = "セッションタイトルの変更";
+"rename.detail" = "Agent Dock 上の表示だけが変わります。セッションのデータ自体は変更されません。空にすると元のタイトルに戻ります。";
+"rename.placeholder" = "カスタムタイトル";
+"rename.ok" = "OK";
+"rename.cancel" = "キャンセル";
+
 /* 相対時刻 */
 "time.now" = "今";
 

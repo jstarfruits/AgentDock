@@ -62,7 +62,12 @@ struct FloatingPanelView: View {
                 spacing: 4
             ) {
                 ForEach(sessions) { session in
-                    AgentGridCell(session: session, isPinned: store.isPinned(session))
+                    AgentGridCell(
+                        session: session,
+                        isPinned: store.isPinned(session),
+                        onRename: { rename(session) },
+                        onResetTitle: { store.setCustomTitle(nil, for: session) }
+                    )
                 }
             }
         } else {
@@ -77,8 +82,17 @@ struct FloatingPanelView: View {
             session: session,
             compact: true,
             isPinned: store.isPinned(session),
-            onTogglePin: { store.togglePin(session) }
+            onTogglePin: { store.togglePin(session) },
+            onRename: { rename(session) },
+            onResetTitle: { store.setCustomTitle(nil, for: session) }
         )
+    }
+
+    /// Opens the rename prompt pre-filled with the current display title
+    private func rename(_ session: AgentSession) {
+        if let text = TitlePrompt.ask(current: session.displayTitle) {
+            store.setCustomTitle(text, for: session)
+        }
     }
 
     /// Collapsible section for needs-attention sessions left unattended for a long time
